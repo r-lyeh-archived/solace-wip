@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Slider - Range slider</title>
+  <link href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+  <script src="http://jqueryui.com/resources/demos/external/jquery-mousewheel/jquery.mousewheel.js"></script>
+
+  <script>
+  $(function() {
+    $( "#menu" ).menu();
+  });
+  </script>
+  <style>
+  .ui-menu { width: 150px; }
+  </style>
+
+  <script>
+
+  $(function() {
+    $( "#modal" ).dialog({
+      resizable: false,
+      height:140,
+      modal: true,
+      buttons: {
+        "Delete all items": function() {
+          $( this ).dialog( "close" );
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
+  });
+
+  $(function() {
+    $( "#tabs" ).tabs();
+  });
+
+  $(function() {
+    $( document ).tooltip(); // highlight all titles
+  });
+
+  $(function() {
+    $( "#progressbar" ).progressbar({
+      value: 37
+    });
+  });
+
+  $(function() {
+    $( "#accordion" ).accordion({
+        heightStyle: "content"
+    });
+  });
+
+  $(function() {
+    $( "#slider-range" ).slider({
+      range: true,
+      min: 0,
+      max: 500,
+      values: [ 75, 300 ],
+        step: 5, //optional
+        orientation: "vertical", // optional
+      slide: function( event, ui ) {
+        $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+      }
+    });
+    $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
+      " - $" + $( "#slider-range" ).slider( "values", 1 ) );
+  });
+
+  $(function() {
+    $( "#dialog" ).dialog();
+  });  
+
+
+  $(function() {
+    var availableTags = [
+      "ActionScript",
+      "AppleScript",
+      "Asp",
+      "BASIC",
+      "C",
+      "C++",
+      "Clojure",
+      "COBOL",
+      "ColdFusion",
+      "Erlang",
+      "Fortran",
+      "Groovy",
+      "Haskell",
+      "Java",
+      "JavaScript",
+      "Lisp",
+      "Perl",
+      "PHP",
+      "Python",
+      "Ruby",
+      "Scala",
+      "Scheme"
+    ];
+    $( "#tooltip" ).autocomplete({
+      source: availableTags
+    });
+  });
+
+  /*
+
+interactions
+draggable
+droppable
+resizable
+selectable
+sortable
+
+widgets
+***
+
+effects
+show/hide/toggle/switch/easing
+
+position...
+my:  left/center/right my: top/center/bottom
+at:    
+
+cons {
+    3d on container
+    container on 3d
+
+    finger based
+    mouse based
+
+    Data Grid
+    Tree View
+    Combo widgets
+    Color Picker
+    Forms widgets
+    Charts
+    Splitter/Layout/Panel
+    File Uploader
+    RTL Support
+    Validation
+    Globalization/Localization    
+}
+alts {
+    http://wijmo.com/demo
+    http://demos.telerik.com/kendo-ui/
+    http://www.jeasyui.com/demo/main/
+}
+
+motivations {
+    jquery ui
+
+    ref-value/getter/setter
+    const
+    range (0,100] step(0.01)
+    [print]
+    [print [100]]
+    [print [100 200]]
+
+    grid = ~list; list = ~grid
+}
+
+  */
+
+  $(function() {
+    var spinner = $( "#spinner" ).spinner();
+ 
+    $( "#disable" ).click(function() {
+      if ( spinner.spinner( "option", "disabled" ) ) {
+        spinner.spinner( "enable" );
+      } else {
+        spinner.spinner( "disable" );
+      }
+    });
+    $( "#destroy" ).click(function() {
+      if ( spinner.spinner( "instance" ) ) {
+        spinner.spinner( "destroy" );
+      } else {
+        spinner.spinner();
+      }
+    });
+    $( "#getvalue" ).click(function() {
+      alert( spinner.spinner( "value" ) );
+    });
+    $( "#setvalue" ).click(function() {
+      spinner.spinner( "value", 5 );
+    });
+ 
+    $( "button" ).button();
+  });
+
+   $( "#files" ).selectmenu();
+
+    $(document).ready(function() {                 
+        var sortableLinks = $("#category_links_list_3");
+        $(sortableLinks).sortable();
+        var linkOrderData = $(sortableLinks).sortable('serialize');    
+        alert( linkOrderData );    
+    });
+
+  </script>
+</head>
+<body>
+
+<div id="tabs">
+  <ul>
+    <li><a href="#tabs-1">Nunc tincidunt</a></li>
+    <li><a href="#tabs-2">Proin dolor</a></li>
+    <li><a href="#tabs-3">Aenean lacinia</a></li>
+  </ul>
+  <div id="tabs-1">
+    <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+  </div>
+  <div id="tabs-2">
+    <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
+  </div>
+  <div id="tabs-3">
+    <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+    <p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+  </div>
+</div>
+
+<div id="modal" title="Empty the recycle bin?">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+</div>
+
+<ul id="menu">
+  <li><span class="ui-icon ui-icon-disk"></span>Save</li>
+  <li><span class="ui-icon ui-icon-zoomin"></span>Zoom In</li>
+  <li><span class="ui-icon ui-icon-zoomout"></span>Zoom Out</li>
+  <li class="ui-state-disabled"><span class="ui-icon ui-icon-print"></span>Print...</li>
+  <li>
+    Playback
+    <ul>
+      <li><span class="ui-icon ui-icon-seek-start"></span>Prev</li>
+      <li><span class="ui-icon ui-icon-stop"></span>Stop</li>
+      <li><span class="ui-icon ui-icon-play"></span>Play</li>
+      <li><span class="ui-icon ui-icon-seek-end"></span>Next</li>
+    </ul>
+  </li>
+  <li>Learn more about this menu</li>
+</ul>
+ 
+<input id="tooltip" value="C++" title="language test">
+ 
+<p title="100-200">
+  <label for="spinner">Select a value:</label>
+  <input id="spinner" name="value">
+</p>
+
+<form action="#">
+    <label for="files">Select a file</label>
+    <select name="files" id="files">
+      <optgroup label="Scripts">
+        <option value="jquery">jQuery.js</option>
+        <option value="jqueryui">ui.jQuery.js</option>
+      </optgroup>
+      <optgroup label="Other files">
+        <option value="somefile">Some unknown file</option>
+        <option value="someotherfile">Some other file with a very long option text</option>
+      </optgroup>
+    </select>
+</form>
+
+<p>
+  <label for="amount">Price range:</label>
+  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+</p>
+<div id="slider-range"></div>
+
+<div id="progressbar"></div>
+
+<div id="dialog" title="Basic dialog">
+  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+</div>
+
+<h1 id="position"></h1>
+<canvas id="tracer" width="600" height="600"></canvas>
+<div id="slider_a"></div>
+<div id="log"></div>
+
+<div id="accordion">
+  <h3>Section 1</h3>
+  <div>
+    <p>
+    Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
+    ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
+    amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
+    odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
+    </p>
+  </div>
+  <h3>Section 2</h3>
+  <div>
+    <p>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+  </div>
+  <h3>Section 3</h3>
+  <div>
+    <p>
+    Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
+    Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
+    ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
+    lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
+    </p>
+    <ul>
+      <li>List item one</li>
+      <li>List item two</li>
+      <li>List item three</li>
+    </ul>
+  </div>
+  <h3>Section 4</h3>
+  <div>
+    <p>
+    Cras dictum. Pellentesque habitant morbi tristique senectus et netus
+    et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis in
+    faucibus orci luctus et ultrices posuere cubilia Curae; Aenean lacinia
+    mauris vel est.
+    </p>
+    <p>
+    Suspendisse eu nisl. Nullam ut libero. Integer dignissim consequat lectus.
+    Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
+    inceptos himenaeos.
+    </p>
+  </div>
+</div>
+
+
+
+<div class="hidden" id="inline_list_3">
+    <ul class="category_links_list ui-sortable" id="category_links_list_3">
+        <li class="link_title ui-state-default" id="category_link_8">Coconut Oil</li>
+        <li class="link_title ui-state-default" id="category_link_9">Hempseed</li>
+    </ul>
+</div>
+
+<script>
+    "use strict";
+
+    //Create a slider to control spaceship acceleration
+    function slideUpdate() {
+        $("#log").html( $("#log").html() + ',' + $("#slider_a").slider("value") );
+    }
+
+    $(function() {
+        $('#slider_a').slider({
+            min: 0, max: 100, value: 20,
+            slide: slideUpdate, change: slideUpdate
+        });
+    });
+
+    //Draw the spaceship trajectory
+    var canvas = document.getElementById('tracer');
+    var ctx = canvas.getContext('2d');
+
+    var lastPos = undefined;
+    gPosition.onChange = function(newPos) {
+        if(lastPos) {
+            ctx.beginPath();
+            ctx.moveTo(lastPos[0], lastPos[1]);
+            ctx.lineTo(newPos[0], newPos[1]);
+            ctx.stroke();
+
+            $('#position').html(JSON.stringify(newPos));
+        }
+
+        lastPos = newPos;
+    };
+
+</script>
+
+</body>
+</html>

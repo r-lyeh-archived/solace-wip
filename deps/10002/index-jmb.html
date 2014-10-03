@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Default theme - jQuery Mobile Demos</title>
+    <link rel="stylesheet" href="http://demos.jquerymobile.com/1.4.4/theme-default/../css/themes/default/jquery.mobile-1.4.4.min.css">
+    <link rel="shortcut icon" href="http://demos.jquerymobile.com/1.4.4/theme-default/../favicon.ico">
+    <script src="http://demos.jquerymobile.com/1.4.4/theme-default/../js/jquery.js"></script>
+    <script src="http://demos.jquerymobile.com/1.4.4/theme-default/../js/jquery.mobile-1.4.4.min.js"></script>
+    <script>
+        $( document ).on( "pagecreate", function() {
+            $( "#theme-selector input" ).on( "change", function( event ) {
+                var themeClass = $( "#theme-selector input:checked" ).attr( "id" );
+
+                $( "#testpage" ).removeClass( "ui-page-theme-a ui-page-theme-b" ).addClass( "ui-page-theme-" + themeClass );
+                $( "#ui-body-test" ).removeClass( "ui-body-a ui-body-b" ).addClass( "ui-body-" + themeClass );
+                $( "#ui-bar-test, #ui-bar-form" ).removeClass( "ui-bar-a ui-bar-b" ).addClass( "ui-bar-" + themeClass );
+                $( ".ui-collapsible-content" ).removeClass( "ui-body-a ui-body-b" ).addClass( "ui-body-" + themeClass );
+                $( ".theme" ).text( themeClass );
+            });
+            $( "#testpage" ).removeClass( "ui-shadow-icon" );
+
+            $( "#testpage" ).removeClass( "noshadow" );
+            $( "#testpage" ).addClass( "noshadow" );
+        });
+    </script>
+    <style>
+        .noshadow * {
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+            box-shadow: none !important;
+        }
+        form.ui-mini .ui-field-contain fieldset.ui-controlgroup legend small {
+            color: #666;
+        }
+    </style>
+
+<body>
+
+
+<div id="testpage" data-role="page" class="ui-mini">
+
+    <div data-role="header">
+        <h1>Page Title</h1>
+        <a href="#" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-alt-icon ui-nodisc-icon ui-icon-gear">Options</a>
+	</div><!-- /header -->
+
+	<div role="main" class="ui-content">
+		<p>Page content goes here.</p>
+
+<div data-role="tabs" id="tabs">
+  <div data-role="navbar">
+    <ul>
+      <li><a href="#one" data-ajax="false">one</a></li>
+      <li><a href="#two" data-ajax="false">two</a></li>
+      <li><a href="ajax-content-ignore.html" data-ajax="false">three</a></li>
+    </ul>
+  </div>
+  <div id="one" class="ui-body-d ui-content">
+    <h1>First tab contents</h1>
+  </div>
+  <div id="two">
+    <ul data-role="listview" data-inset="true">
+        <li><a href="#">Acura</a></li>
+        <li><a href="#">Audi</a></li>
+        <li><a href="#">BMW</a></li>
+        <li><a href="#">Cadillac</a></li>
+        <li><a href="#">Ferrari</a></li>
+    </ul>
+  </div>
+</div>
+
+<form>
+    <label>
+        <input type="checkbox" name="checkbox-0">Check me
+    </label>
+
+    <div class="ui-field-contain" id="theme-selector">
+        <fieldset data-role="controlgroup" data-type="horizontal">
+            <legend>Theme:</legend>
+            <label for="a">A</label>
+            <input type="radio" name="theme" id="a" checked>
+            <label for="b">B</label>
+            <input type="radio" name="theme" id="b">
+        </fieldset>
+    </div>
+</form>
+
+<form>
+    <fieldset data-role="controlgroup" data-type="horizontal">
+        <legend>Horizontal:</legend>
+        <input type="checkbox" name="checkbox-h-2a" id="checkbox-h-2a">
+        <label for="checkbox-h-2a">One</label>
+        <input type="checkbox" name="checkbox-h-2b" id="checkbox-h-2b">
+        <label for="checkbox-h-2b">Two</label>
+        <input type="checkbox" name="checkbox-h-2c" id="checkbox-h-2c">
+        <label for="checkbox-h-2c">Three</label>
+    </fieldset>
+</form>
+
+<form>
+    <label for="textinput-s">Text Input:</label>
+    <input type="text" name="textinput-s" id="textinput-s" placeholder="Text input" value="" data-clear-btn="true">
+    <label for="select-native-s">Select:</label>
+    <select name="select-native-s" id="select-native-s">
+        <option value="small">One</option>
+        <option value="medium">Two</option>
+        <option value="large">Three</option>
+    </select>
+    <label for="slider-s">Input slider:</label>
+    <input type="range" name="slider-s" id="slider-s" value="25" min="0" max="100" data-highlight="true">
+</form>
+
+	</div><!-- /content -->
+
+	<div data-role="footer">
+		<h4>Page Footer</h4>
+	</div><!-- /footer -->
+</div><!-- /page -->
+
+</body>
+</html>

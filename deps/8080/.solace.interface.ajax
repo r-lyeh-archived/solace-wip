@@ -1,0 +1,18 @@
+<input type="button" value="ALL" class="Button" onclick="toggleClass(this,'repeatcount'); var i = hasClass(this, 'repeatcount') ^ 1; setVis('class_ALL', i); each($('.Button'), function(){ if(!i) addClass(this, 'repeatcount'); else removeClass(this, 'repeatcount'); }); "/>
+<input type="button" value="lvl0" class="class_lvl0 Button" onclick="toggleVis('class_lvl0'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="lvl1" class="class_lvl1 Button" onclick="toggleVis('class_lvl1'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="lvl2" class="class_lvl2 Button" onclick="toggleVis('class_lvl2'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="lvl3" class="class_lvl3 Button" onclick="toggleVis('class_lvl3'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="err" class="class_err Button" onclick="toggleVis('class_err'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="warn" class="class_warn Button" onclick="toggleVis('class_warn'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="log" class="class_log Button" onclick="toggleVis('class_log'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="info" class="class_info Button" onclick="toggleVis('class_info'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="mesh" class="class_mesh Button" onclick="toggleVis('class_mesh'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="texture" class="class_texture Button" onclick="toggleVis('class_texture'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="asset" class="class_asset Button" onclick="toggleVis('class_asset'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="load" class="class_load Button" onclick="toggleVis('class_load'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="save" class="class_save Button" onclick="toggleVis('class_save'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="init" class="class_init Button" onclick="toggleVis('class_init'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="jpg" class="class_jpg Button" onclick="toggleVis('class_jpg'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="debug" class="class_debug Button" onclick="toggleVis('class_debug'); toggleClass(this,'repeatcount');"/>
+<input type="button" value="release" class="class_release Button" onclick="toggleVis('class_release'); toggleClass(this,'repeatcount');"/>

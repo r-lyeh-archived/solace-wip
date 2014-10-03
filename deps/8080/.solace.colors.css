@@ -1,0 +1,17 @@
+.class_lvl0 { background-color: hsl(0,50%,50%); }
+.class_lvl1 { background-color: hsl(21,50%,50%); }
+.class_lvl2 { background-color: hsl(42,50%,50%); }
+.class_lvl3 { background-color: hsl(63,50%,50%); }
+.class_err { background-color: hsl(84,50%,50%); }
+.class_warn { background-color: hsl(105,50%,50%); }
+.class_log { background-color: hsl(127,50%,50%); }
+.class_info { background-color: hsl(148,50%,50%); }
+.class_mesh { background-color: hsl(169,50%,50%); }
+.class_texture { background-color: hsl(190,50%,50%); }
+.class_asset { background-color: hsl(211,50%,50%); }
+.class_load { background-color: hsl(232,50%,50%); }
+.class_save { background-color: hsl(254,50%,50%); }
+.class_init { background-color: hsl(275,50%,50%); }
+.class_jpg { background-color: hsl(296,50%,50%); }
+.class_debug { background-color: hsl(317,50%,50%); }
+.class_release { background-color: hsl(338,50%,50%); }

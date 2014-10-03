@@ -1,0 +1,15 @@
+[submodule "route66"]
+    path = deps/route66
+    url = https://github.com/r-lyeh/route66
+[submodule "bridge"]
+    path = deps/bridge
+    url = https://github.com/r-lyeh/bridge
+[submodule "eval"]
+    path = deps/eval
+    url = https://github.com/r-lyeh/eval
+[submodule "heal"]
+    path = deps/heal
+    url = https://github.com/r-lyeh/heal
+[submodule "oak"]
+    path = deps/oak
+    url = https://github.com/r-lyeh/oak

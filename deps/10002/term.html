@@ -1,0 +1,81 @@
+<!--
+  -- created by i-saint
+  -- distributed under Creative Commons Attribution (CC BY) license.
+  -- https://github.com/i-saint/WebDebugMenu
+  -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+<title>WebDebugMenu</title>
+
+ <style type="text/css">
+ .data_property {vertical-align:top; display:inline-block; }
+ .data_children {margin:2px 2px 2px 20px;}
+ .data_type {margin:0px 5px 0px 5px;}
+ .data_inputs {display:inline-block;}
+ .data_control {display:inline-block;}
+ .numeric_slider {width:100px; height:8px;}
+ input.numeric {width:95px;}
+ </style>
+
+<!-- script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script -->
+
+<link href="http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+<script src="http://jqueryui.com/resources/demos/external/jquery-mousewheel/jquery.mousewheel.js"></script>
+<script src="term.js"></script>
+<script type="text/javascript">
+
+var term;
+
+function onLoad() {
+    term = new Terminal({
+        cols: 80,
+        rows: 24,
+        useStyle: true,
+        screenKeys: true,
+        cursorBlink: true,
+        visualBell: false,
+        popOnBell: false,        
+        scrollback: 1000,
+        debug: false,
+
+        colors: [
+          "#2e3436",
+          "#cc0000",
+          "#4e9a06",
+          "#c4a000",
+          "#3465a4",
+          "#75507b",
+          "#06989a",
+          "#d3d7cf",
+          "#555753",
+          "#ef2929",
+          "#8ae234",
+          "#fce94f",
+          "#729fcf",
+          "#ad7fa8",
+          "#34e2e2",
+          "#eeeeec"
+        ]
+    });
+    term.open($('#term')[0]);
+    term.write('\x1b[2J');
+    term.reset();
+    term.refresh(0, term.rows - 1);
+    term.writeln('\x1b[31mWelcome to term.js!\x1b[m');
+    term.on('key', function(d) {
+        if( d == '\n' || d == '\r' ) term.writeln(''); else term.write(d);
+    });
+}
+
+</script>
+</head>
+
+<body onload="onLoad()">
+    <div id="term"></div>
+</body>
+
+</html>
