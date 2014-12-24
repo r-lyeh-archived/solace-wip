@@ -1,5 +1,5 @@
 // solace - a console replacement. forked and rewritten from https://github.com/rxi/lovebird
-// - rlyeh, boost licensed
+// - rlyeh, zlib/libpng licensed
 
 #include <stdlib.h>
 #include <cctype>
@@ -15,9 +15,11 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+#include <set>
 
 #include <math.h>
 
+#if 0
 #ifdef _MSC_VER
 #include <omp.h>      // omp_get_wtime()
 #else
@@ -28,15 +30,14 @@ double omp_get_wtime() {
 struct timeval tim;
 gettimeofday(&tim, NULL);
 double t0=tim.tv_sec+(tim.tv_usec/1000000.0);
-return t0;    
+return t0;
 }
-
+#endif
 #endif
 
 #include <cstdlib>
-#include <heal/heal.hpp>
-#include <route66/route66.hpp>
-#include <oak/oak.hpp>
+#include "deps/heal/heal.hpp"
+#include "deps/route66/route66.hpp"
 #include "solace.hpp"
 
 #ifdef _WIN32
@@ -44,8 +45,55 @@ return t0;
 #include <direct.h>   // _mkdir()
 #else
 #include <unistd.h>   // access()
-#include <sys/stat.h> // mkdir() 
+#include <sys/stat.h> // mkdir()
 #endif
+
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#define _dup dup
+#define _dup2 dup2
+#define _close close
+#define _fileno fileno
+#define _write write
+#endif
+
+//#define CAPTURE_PRINTF
+
+namespace solace {
+    struct Redirect {
+        FILE *fp;
+        int fd, old, ch;
+        std::string file;
+        Redirect( int ch, const std::string &file ) : ch(ch), file(file) {
+            old = _dup( ch );
+            open();
+        }
+        void reopen() {
+            close();
+            open();
+        }
+        void terminal( const std::string &text ) {
+            _write( old, text.c_str(), text.size() );
+        }
+        ~Redirect () {
+            close();
+        }
+    private:
+        void open() {
+            fp = fopen( file.c_str(), "wb" );
+            fd = _fileno( fp );
+            _dup2( fd, ch );
+        }
+        void close() {
+            _dup2( old, ch );
+            fclose( fp );
+        }
+    };
+#ifdef CAPTURE_PRINTF
+     Redirect out(1, "./test_stdout"), err(2, "./test_stderr");
+#endif
+}
 
 #ifdef min
 #undef min
@@ -77,7 +125,7 @@ namespace {
             static unsigned line = 0;
             this->line = ++line;
 
-            static double epoch = omp_get_wtime();
+            static double epoch = heal::get_time_clock();
 
             if( timestamp ) {
                 std::time_t date = std::time(NULL);
@@ -86,7 +134,7 @@ namespace {
                 std::strftime(stamp, sizeof(stamp)-1, "%H:%M:%S", t);
 
                 //sprintf(&stamp[8], "+%08.3fs", fmod( omp_get_wtime() - epoch, 10000. ) );
-                sprintf(&stamp[8], ".%03d", int(1000 * fmod( omp_get_wtime() - epoch, 1. )) );
+                sprintf(&stamp[8], ".%03d", int(1000 * fmod( heal::get_time_clock() - epoch, 1. )) );
             }
         }
     };
@@ -94,13 +142,16 @@ namespace {
 }
 
 namespace solace  {
-namespace config {
-    enum { MAX_LINES = 1000 };
-    std::map< std::string, std::string > highlights;
-    std::string server_url;
-    std::string (*eval)( const std::string &cmd ) = 0;
-    info *the_info = 0;
-}
+    namespace config {
+        enum { MAX_LINES = 1000 };
+        std::map< std::string, std::string > highlights;
+        std::string server_url;
+
+        info *the_info = 0;
+
+        std::string (*eval)( const std::string &script ) = 0;
+        std::map<std::string,std::string> (*get_property_list)( const std::string &keypath ) = 0;
+    }
 }
 
 namespace
@@ -120,13 +171,13 @@ namespace
         }
         return s;
     }
-    std::deque< std::string > tokenize( const std::string &self, const std::string &delimiters ) {
+	std::vector<std::string> tokenize( const std::string &self, const std::string &delimiters ) {
         std::string map( 256, '\0' );
         for( std::string::const_iterator it = delimiters.begin(), end = delimiters.end(); it != end; ++it ) {
             unsigned char ch( *it );
             map[ ch ] = '\1';
         }
-        std::deque< std::string > tokens(1);
+        std::vector<std::string> tokens(1);
         for( std::string::const_iterator it = self.begin(), end = self.end(); it != end; ++it ) {
             unsigned char ch( *it );
             /**/ if( !map.at(ch)          ) tokens.back().push_back( char(ch) );
@@ -135,9 +186,10 @@ namespace
         while( tokens.size() && !tokens.back().size() ) tokens.pop_back();
         return tokens;
     }
-    std::string join( const std::deque< std::string > &self, const char &sep ) {
+	template<typename T>
+    std::string join( const T &self, const char &sep ) {
         std::string out;
-        for( std::deque< std::string >::const_iterator it = self.begin(), end = self.end(); it != end; ++it ) {
+        for(typename T::const_iterator it = self.begin(), end = self.end(); it != end; ++it ) {
             out += (*it) + sep;
         }
         return out.empty() ? out + sep : out;
@@ -197,30 +249,28 @@ namespace
 
         return !is.fail();
     }
-    // taken from...
-    bool mkdirr( const std::string &path ) {
-        std::string off;
-        std::deque<std::string> tok = tokenize( path, "/\\" );
-        for( std::deque<std::string>::const_iterator it = tok.begin(), end = tok.end(); it != end; ++it ) {
-#ifdef _WIN32
-            off += *it + "\\";
-            _mkdir( off.c_str() );
-#else
-            off += *it + "/";
-            mkdir( off.c_str(), 0777 );
-#endif
-        }
-#ifdef _WIN32
-        return -1 != _access( off.c_str(), 0 );
-#else
-        return -1 != access( off.c_str(), F_OK );
-#endif
-    }
-    //
-    // taken from https://github.com/r-lyeh/apathy 
+    // taken from https://github.com/r-lyeh/apathy
     //
     namespace apathy
     {
+        bool mkdirr( const std::string &path ) {
+            std::string off;
+            std::vector<std::string> tok = tokenize( path, "/\\" );
+            for( std::vector<std::string>::const_iterator it = tok.begin(), end = tok.end(); it != end; ++it ) {
+    #ifdef _WIN32
+                off += *it + "\\";
+                _mkdir( off.c_str() );
+    #else
+                off += *it + "/";
+                mkdir( off.c_str(), 0777 );
+    #endif
+            }
+    #ifdef _WIN32
+            return -1 != _access( off.c_str(), 0 );
+    #else
+            return -1 != access( off.c_str(), F_OK );
+    #endif
+        }
         std::deque<std::string> split( const std::string &str, char sep )
         {
             std::deque<std::string> tokens;
@@ -410,7 +460,7 @@ namespace {
     std::string get_tagline( const std::string &text, const std::string &extra = std::string() ) {
         // @todo: find a better (faster) way to do this {
         std::vector< std::string > tags = split( text ); //, " !|:;,.@#~$%&/(){}[]+-*\\" );
-        std::string tagline; 
+        std::string tagline;
         for( std::vector< std::string >::const_iterator it = tags.begin(), end = tags.end(); it != end; ++it ) {
             const std::string &t = *it;
             if( t.size() > 1 ) tagline += std::string() + "class_" + t + " ";
@@ -422,94 +472,60 @@ namespace {
     std::string html( const std::string &text = std::string(), const info &i = info() );
 
     std::deque< std::string > log;
+    std::mutex mutex;
 
     std::string get_buffer() {
         std::string out;
+        mutex.lock();
+
+#ifdef CAPTURE_PRINTF
+        {
+            std::stringstream ss;
+            std::ifstream ifs( "./test_stdout" );
+            ss << ifs.rdbuf();
+            solace::out.terminal( ss.str().c_str() );
+            solace::out.reopen();
+
+            std::deque< std::string > text = tokenize( ss.str(), "\r\n");
+            for( std::deque< std::string >::const_iterator it = text.begin(), end = text.end(); it != end; ++it ) {
+                log.push_back( html(*it, info()) );
+            }
+        }
+
+        {
+            std::stringstream ss;
+            std::ifstream ifs( "./test_stderr" );
+            ss << ifs.rdbuf();
+            solace::err.terminal( ss.str().c_str() );
+            solace::err.reopen();
+
+            std::deque< std::string > text = tokenize( ss.str(), "\r\n");
+            for( std::deque< std::string >::const_iterator it = text.begin(), end = text.end(); it != end; ++it ) {
+                log.push_back( html(*it, info()) );
+            }
+        }
+#endif
+
         for( std::deque<std::string>::iterator it = log.begin(), end = log.end(); it != end; ++it ) {
             out += *it;
         }
+        mutex.unlock();
         return out;
     }
 
-    struct var {
-        int type;
-        union {
-            int integer;
-            double real;
-            std::string *string;
-        };
-
-        void cleanup();
-
-        var() : type(0), integer(0)
-        {}
-
-        var( const int &i ) : type(0), integer(i)
-        {}
-
-        var( const double &r ) : type(1), real(r)
-        {}
-
-        var( const std::string &r ) : type(2), string( new std::string(r) )
-        {}
-
-        template<size_t N>
-        var( const char (&s)[N]) : type(2), string( new std::string(s) )
-        {}
-
-        var( const var &other ) {
-            operator=( other );
-        }
-
-        ~var() {
-            cleanup();
-        }
-
-        var &operator=( const var &other ) {
-            if( &other != this ) {
-                cleanup();
-                type = other.type;
-                if( type == 0 ) integer = other.integer;
-                if( type == 1 ) real = other.real;
-                if( type == 2 ) string = new std::string( *other.string );
-            }
-            return *this;
-        }
-    };
-
-    template<typename T> bool isType(const var &v) { return false; }
-    template<>           bool isType<int>(const var &v) { return v.type == 0; }
-    template<>           bool isType<double>(const var &v) { return v.type == 1; }
-    template<>           bool isType<std::string>(const var &v) { return v.type == 2; }
-
-    template<typename T> const T& cast(const var &v) { static T t; return t = T(); }
-    template<>           const int& cast<int>(const var &v) { return v.integer; }
-    template<>           const double& cast<double>(const var &v) { return v.real; }
-    template<>           const std::string& cast<std::string>(const var &v) { return *v.string; }
-
-    void var::cleanup() {
-        if(isType<std::string>(*this)) delete string, string = 0;
-        type = 0;
-    }
-
-    oak::tree< std::string, var > tree_env;
-
-    std::string get_env( const oak::tree< std::string, var > &env, const std::string &path = "" ) {
-        std::stringstream ss, table;
+    std::string get_env( const std::map< std::string, std::string > &env, const std::string &path = "" ) {
+        std::stringstream ss;
         ss << "{ \"valid\": true, \"path\": \"" << path << "\", \"vars\":[ ";
-            for( oak::tree< std::string, var >::const_iterator it = env.begin(), end = env.end(); it != end; ++it ) {
-                const std::pair< std::string, oak::tree< std::string, var > > &pair = *it;
-                if( pair.second.size() ) {
-                    std::string tt = get_env( pair.second, path + pair.first );
-                    ss << "{\"key\":\"" << pair.first << "\", \"value\": \"[table]\", \"type\": \"table\" }, ";
+            for( std::map< std::string, std::string >::const_iterator it = env.begin(), end = env.end(); it != end; ++it ) {
+                const std::string &key = it->first;
+                const std::string &val = it->second;
+                if( val.empty() ) {
+                    ss << "{\"key\":\"" << key << "\", \"value\": \"[table]\", \"type\": \"table\" }, ";
                 } else {
-                    const var &v = pair.second.get();
-                    /****/ if( isType<std::string>(v) ) {
-                        ss << "{\"key\":\"" << pair.first << "\", \"value\": \""<< cast<std::string>(v) << "\", \"type\": \"string\" }, ";
-                    } else if( isType<int>(v) ) {
-                        ss << "{\"key\":\"" << pair.first << "\", \"value\": " << cast<int>(v) << ", \"type\": \"number\" }, ";
-                    } else if( isType<double>(v) ) {
-                        ss << "{\"key\":\"" << pair.first << "\", \"value\": " << cast<double>(v) << ", \"type\": \"number\" }, ";
+                    if( val[0] == '"' ) {
+                        ss << "{\"key\":\"" << key << "\", \"value\": "<< val << ", \"type\": \"string\" }, ";
+                    } else {
+                        ss << "{\"key\":\"" << key << "\", \"value\": \"" << val << "\", \"type\": \"number\" }, ";
                     }
                 }
             }
@@ -608,21 +624,18 @@ namespace {
             return 404;
         }
 
-        std::deque<std::string> split = tokenize(req.arguments["p"], ".");
-
-        std::string random = to_string( rand() );
-        tree_env[ "random" ] = random;
-        tree_env[ "hello" ] = "world";
-        tree_env[ "abc" ][ "def" ] = 123;
-
-        oak::tree< std::string, var > const *env = &tree_env;
-        for( std::deque<std::string>::const_iterator it = split.begin(), end = split.end(); it != end; ++it ) {
-            const std::string &path = *it;
-            env = &(*env)(path);
+        if( !config::get_property_list ) {
+            headers << route66::mime(".json");
+            content << std::endl;
+            return 404;
         }
 
+        std::vector<std::string> split = tokenize(req.arguments["p"], ".");
+        std::string keypath = join(split, '.');
+        std::map<std::string,std::string> props = (*config::get_property_list)( keypath );
+
         headers << route66::mime(".json");
-        content << get_env( env->is_valid() ? *env : tree_env, join(split, '.') );
+        content << get_env( props, keypath );
         return 200;
     }
 
@@ -660,7 +673,7 @@ namespace {
 
         if( answer.size() ) {
             ::solace::cout << ( std::string("> ") + answer ) << std::endl;
-        } 
+        }
 
         delete the_info, the_info = 0;
 
@@ -712,10 +725,10 @@ namespace {
 
     int GET_stacktrace( route66::request &req, std::ostream &headers, std::ostream &content ) {
         std::string cmd = req.arguments["p"];
-        std::deque<std::string> strings = tokenize( cmd, "[,]");
+        std::vector<std::string> strings = tokenize( cmd, "[,]");
         heal::callstack cs;
         cs.frames.resize(0);
-        for( std::deque<std::string>::const_iterator it = strings.begin(), end = strings.end(); it != end; ++it ) {
+        for( std::vector<std::string>::const_iterator it = strings.begin(), end = strings.end(); it != end; ++it ) {
             const std::string &s = *it;
             //std::stringstream ss;
             //ss << s;
@@ -728,7 +741,7 @@ namespace {
         std::vector<std::string> traces = cs.unwind();
         for( std::vector<std::string>::iterator jt = traces.begin(), jend = traces.end(); jt != jend; ++jt ) {
             std::string &it = *jt;
-            std::deque<std::string> split = tokenize(replace(it, "\\", "/"), "()"); // expects "symbol (file:line)" stacktrace format
+            std::vector<std::string> split = tokenize(replace(it, "\\", "/"), "()"); // expects "symbol (file:line)" stacktrace format
             if( split.size() == 2 )
                 it = std::string() + "<a href=\"javascript:edit('" + split[1] + "');\"><xml>" + it + "</xml></a>\n";
             else
@@ -770,10 +783,12 @@ namespace {
     void solace_logger( const std::string &cache, bool opening = false ) {
         if( opening ) {
         }
+        mutex.lock();
         log.push_back( cache );
         if( log.size() > ::solace::config::MAX_LINES ) {
             log.pop_front();
         }
+        mutex.unlock();
     }
 
     void logger( bool open, bool feed, bool close, const std::string &line ) {
@@ -797,8 +812,8 @@ namespace {
 
             info i = config::the_info ? *config::the_info : info();
 
-            std::deque< std::string > lines = tokenize(cache, "\r\n");
-            for( std::deque< std::string >::iterator it = lines.begin(), end = lines.end(); it != end; ++it ) {
+            std::vector< std::string > lines = tokenize(cache, "\r\n");
+            for( std::vector< std::string >::iterator it = lines.begin(), end = lines.end(); it != end; ++it ) {
                 std::string &raw = *it;
                 terminal_logger( raw );
 
@@ -816,7 +831,7 @@ namespace {
 }
 } // ::
 
-namespace solace 
+namespace solace
 {
     void set_highlights( const std::vector< std::string > &highlights ) {
         std::string colors, code;
@@ -850,7 +865,11 @@ namespace solace
         return false;
     }
 
-    bool webinstall( int port, std::string (*fn)( const std::string &cmd ) ) {
+    bool webinstall( int port,
+        std::string (*eval)( const std::string &cmd ),
+        std::map<std::string, std::string> (*get_property_list)( const std::string &keypath )
+    )
+    {
 
         {
             // init unwinding from main thread
@@ -863,7 +882,8 @@ namespace solace
         bool ok = true;
 
         // config script/expression evaluator
-        config::eval = fn;
+        config::eval = eval;
+        config::get_property_list = get_property_list;
 
         // add a web server, with env in ajax
         ok = ok && route66::create( port, "GET *", GET_root );
@@ -891,7 +911,7 @@ namespace solace
         static std::set< std::string > cache;
         if( cache.find(at) == cache.end() ) {
             cache.insert(at);
-            mkdirr(at);
+            apathy::mkdirr(at);
         }
 #ifdef _WIN32
         return replace(at, "/", "\\");
@@ -931,6 +951,23 @@ namespace solace
             }
         }
         return false;
+    }
+}
+
+#include <fstream>
+
+namespace solace {
+    bool capture( int fd ) {
+        if( fd == fileno(stdout) || fd == 1 ) {
+//            static Redirect o(1, );
+        }
+        if( fd == fileno(stderr) || fd == 2 ) {
+//            static Redirect o(2, "./test_stderr");
+        }
+        return true;
+    }
+    bool release( int fd ) {
+        return true;
     }
 }
 
@@ -1355,7 +1392,7 @@ $QUOTE(
       <div id="sliders" class="greybordered">
         <iframe src="http://localhost:10002/"></iframe>
       </div>
-  
+
       <div id="editorwin" class="greybordered" style="display:none">
         <div style="width:auto;overflow:scroll;max-height:200px;"><a href='#' id="editortitle" onclick="javascript:hide('editorwin');" style="width:100%"></a></div>
         <div id="editor"></div>

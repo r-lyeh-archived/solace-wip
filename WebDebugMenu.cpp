@@ -60,7 +60,7 @@ namespace {
     }
     bool match( const char *pattern, const char *str ) {
         if( *pattern=='\0' ) return !*str;
-        if( *pattern=='*' )  return match(pattern+1, str) || *str && match(pattern, str+1);
+        if( *pattern=='*' )  return match(pattern+1, str) || (*str && match(pattern, str+1));
         if( *pattern=='?' )  return *str && (*str != '.') && match(pattern+1, str+1);
         return (*str == *pattern) && match(pattern+1, str+1);
     }
@@ -76,6 +76,9 @@ struct wdmEventData
 {
     wdmID node;
     wdmString command;
+
+    wdmEventData( wdmID node, const wdmString &command ) : node(node),command(command)
+    {}
 
     wdmEvent toEvent() const
     {
@@ -367,7 +370,7 @@ int GET_command( route66::request &req, std::ostream &headers, std::ostream &con
 
     struct lambda {
         void operator()(const char *id, const char *command) const {
-            wdmEventData tmp = {std::atoi(id), command};
+            wdmEventData tmp( std::atoi(id), command );
             wdmSystem::getInstance()->addEvent(tmp);
         }
     } _;

@@ -1,10 +1,12 @@
 // solace - a console replacement. forked and rewritten from https://github.com/rxi/lovebird
-// - rlyeh, boost licensed
+// - rlyeh, zlib/libpng licensed
 
 #pragma once
+
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 
 namespace solace {
     // public logging api
@@ -17,8 +19,22 @@ namespace solace {
     bool capture( std::ostream &out );
     bool release( std::ostream &out );
 
-    // html viewer with a custom callback to a script/expression evaluator (like LUA, angelscript, your own, or null for none)
-    bool webinstall( int port = 8080, std::string (*eval)( const std::string &cmd ) = 0 );
+    // stdout, stderr capture; when you want to capture printf() and company.
+    bool capture( int fd );
+    bool release( int fd );
+
+    // install html server with custom callbacks
+    bool webinstall(
+        // port to listen to
+        int port = 8080,
+        // script/expression evaluator (like LUA, angelscript, your own, or null for none)
+        std::string (*eval)( const std::string &cmd ) = 0,
+        // list of current symbols in keypath level tree (or null for none)
+        // - if value is empty subnode type is assumed,
+        // - else if value is \"quoted\" string type is assumed,
+        // - else number type is assumed.
+        std::map<std::string,std::string> (*get_property_list)( const std::string &keypath ) = 0
+    );
     bool webopen();
 
     // get local webhome directory

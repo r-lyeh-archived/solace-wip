@@ -3,7 +3,7 @@ s&#9681;lace
 
 - Solace is a modern console replacement. Written in C++03
 - Solace is HTML/Ajax based.
-- Solace is BOOST licensed.
+- Solace is zlib/libpng licensed.
 
 ### Features
 
@@ -78,11 +78,16 @@ Succesfully installed! 123
 Succesfully captured! 456
 ```
 
+### build
+```
+cl *.cc *.cpp -I deps deps\route66\route66.cpp deps\heal\*.cpp /Zi /DNDEBUG /Oy-
+```
+
 ### possible output
 ![image](https://raw.github.com/r-lyeh/depot/master/solace.png)
 
 ### licenses
-- Solace, BOOST licensed.
+- Solace, zlib/libpng licensed.
 - Original [Lovebird HTML template](https://github.com/rxi/lovebird) by rxi, MIT licensed.
 - Original [WebDebugMenu](https://github.com/i-saint/WebDebugMenu) by i-saint, CC-BY licensed.
 - Full [Ace.js code editor](http://ace.c9.io) by Ajax.org B.V., BSD licensed.

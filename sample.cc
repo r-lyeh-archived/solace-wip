@@ -12,7 +12,6 @@
 //#define wdmDisable
 #include "WebDebugMenu.h"
 
-
 #include "solace.hpp"
 
 #ifdef _WIN32
@@ -188,8 +187,39 @@ typedef Test Test2;
         }
     };
 
-int main() {
+    std::map<std::string,std::string> get_keys( const std::string &prefix_ ) {
+		std::string prefix = prefix_;
+		if( prefix == "." ) prefix.clear();
 
+		while( prefix.size() && prefix[0] == '.' ) prefix = prefix.substr(1);
+		while( prefix.size() && prefix.back() == '.' ) prefix = prefix.substr( 0, prefix.size() - 1 );
+
+        std::map< std::string, std::string > map, out;
+        map[ "random_text" ] = std::string() + "\"hi " + char( rand() % 255 ) + "!\"";
+        map[ "hello" ] = "\"world\"";
+        map[ "abc" ] = "";
+        map[ "abc.def" ] = "123";
+
+        for( std::map< std::string, std::string >::const_iterator it = map.begin(), end = map.end(); it != end; ++it ) {
+            const std::string &key = it->first;
+            const std::string &value = it->second;
+            std::string right = key.substr( prefix.size() );
+            if( GetAsyncKeyState(VK_F9) & 0x8000 ) __asm int 3;
+            if( key.substr( 0, prefix.size() ) == prefix ) {
+                bool has_subkey = right.size() && (right.find_first_of('.') != std::string::npos);
+				if( !has_subkey ) out[ std::string() + "." + right ] = value;
+            }
+        }
+
+        for( auto &kv : out ) {
+            std::cout << prefix << "\t" << kv.first << "\t" << kv.second << "\n";
+        }
+
+        return out;
+    }
+
+
+int main() {
 
     std::thread(threaded()).detach();
 
@@ -215,20 +245,23 @@ int main() {
     solace::set_highlights( highlights );
 
 	// install solace html server
-    solace::webinstall( 8080, &evaluate );
+    solace::webinstall( 8080, &evaluate, &get_keys );
     //solace::webopen();
 
     // write to our log
     solace::cout << "Succesfully installed! " << 123 << std::endl;
 
     // capture std::cout and log it from here
-    //solace::capture( std::cout );
+    // solace::capture( std::cout );
+    solace::capture( 1 );
 
-    for( int i = 0; i < 5; ++i ) {
-        solace::cout << "Succesfully captured! lvl" << i << "!" << std::endl;
+    for( int i = 0; i < 500; ++i ) {
+        printf("Succesfully captured! lvl%d!\n", i );
+        //std::cout << "Succesfully captured! lvl" << i << "!" << std::endl;
+        //solace::cout << "Succesfully captured! lvl" << i << "!" << std::endl;
     }
 
-    solace::cout << "https://raw.githubusercontent.com/r-lyeh/dot/master/images/lenna3.jpg" << std::endl;
+    std::cout << "https://raw.githubusercontent.com/r-lyeh/dot/master/images/lenna3.jpg" << std::endl;
 
     // do whatever
     for( std::string s; std::getline(std::cin, s); )
@@ -242,3 +275,5 @@ namespace boost {
     void throw_exception( const std::exception & ) {
     }
 }
+
+
